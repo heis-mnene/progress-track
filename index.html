@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Life Progress Tracker: Jovian</title>
+<style>
+:root{--bg:#f7f6f2;--card:#fff;--tx:#1f2421;--mut:#6b716c;--ac:#2f7d5b;--wn:#c98a1a;--bd:#c0483a;--ln:#e3e1da;--bar:#e8e6df;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#151816;--card:#1e2320;--tx:#ecefec;--mut:#98a09a;--ac:#5fc194;--wn:#e0a840;--bd:#e5776a;--ln:#2d342f;--bar:#2a312c}}
+:root[data-theme="dark"]{--bg:#151816;--card:#1e2320;--tx:#ecefec;--mut:#98a09a;--ac:#5fc194;--wn:#e0a840;--bd:#e5776a;--ln:#2d342f;--bar:#2a312c}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:720px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:8px 0 2px}h2{font-size:16px;margin:0 0 8px}h3{font-size:15px;margin:14px 0 4px}
+.sub,.meta{color:var(--mut);font-size:13px}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:14px;margin-bottom:12px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.sp{justify-content:space-between}
+button,input,textarea{font:inherit;color:inherit}
+button{background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:6px 12px;cursor:pointer}
+button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+input[type=date],input[type=number],input[type=time],input[type=text]{background:transparent;border:1px solid var(--ln);border-radius:10px;padding:6px 10px}
+input[type=number]{width:90px}
+textarea{width:100%;background:transparent;border:1px solid var(--ln);border-radius:10px;padding:8px;resize:vertical;min-height:44px;margin-top:8px}
+.bar{height:8px;background:var(--bar);border-radius:6px;overflow:hidden;margin:6px 0}.bar i{display:block;height:100%;background:var(--ac)}
+.goal label.h{display:flex;gap:10px;align-items:center;cursor:pointer;font-weight:600}
+input[type=checkbox]{width:20px;height:20px;accent-color:var(--ac)}
+.chk label{display:flex;gap:10px;align-items:center;padding:4px 0;cursor:pointer}
+.top input[type=text]{flex:1;min-width:0}
+.hist{display:flex;gap:4px;align-items:flex-end;height:60px}.hist div{flex:1;background:var(--ac);border-radius:3px 3px 0 0;min-height:3px}
+.big{font-size:26px;font-weight:700;color:var(--ac)}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.tag{font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px;color:#fff}
+.g{background:var(--ac)}.y{background:var(--wn)}.r{background:var(--bd)}
+.tabs{display:flex;gap:6px;margin:10px 0}.tabs button{flex:1}
+.guide p,.guide li{font-size:15px}.guide ul,.guide ol{padding-left:20px;margin:4px 0}
+.hide{display:none}
+#st{font-size:12px;color:var(--mut)}
+</style>
+</head>
+<body>
+<main>
+<h1>Life Progress Tracker</h1>
+<p class="sub">True happiness, inner peace and success. Fill in every day and see how you grow.</p>
+<div class="tabs"><button data-t="today" class="on">Today</button><button data-t="prog">My Progress</button><button data-t="guide">How to Use</button></div>
+
+<section id="today">
+ <div class="card">
+  <div class="row sp"><div class="row"><button id="prev">←</button><input type="date" id="date"><button id="next">→</button><button id="tod">Today</button></div><span id="st"></span></div>
+  <div class="meta" style="margin-top:8px">Journey start date: <input type="date" id="start"> &nbsp; Daily budget: <input type="number" id="bud" min="0" placeholder="0"></div>
+ </div>
+ <div id="goals"></div>
+ <div class="card chk"><h2>Daily routine</h2><div id="routine"></div></div>
+ <div class="card top"><h2>Top 3 tasks</h2><div id="top"></div></div>
+ <div class="card"><h2>Night review</h2>
+  <div class="row"><span>Bedtime:</span><input type="time" id="bed"><span class="meta">target 22:20</span></div>
+  <textarea id="ref" placeholder="What did I learn today? What will I do differently tomorrow?"></textarea></div>
+</section>
+
+<section id="prog" class="hide">
+ <div class="card"><div class="stats" id="stats"></div></div>
+ <div class="card"><h2>Last 14 days (daily score)</h2><div class="hist" id="hist"></div></div>
+ <div id="pg"></div>
+ <div class="card"><h2>Weekly review (do this every Sunday)</h2>
+  <div class="meta">1. Which goal is most behind? 2. What blocked me? 3. What is ONE change for next week?</div>
+  <textarea id="wk" placeholder="Write your weekly review here..."></textarea></div>
+</section>
+
+<section id="guide" class="hide card guide">
+<h2>How to use this tracker</h2>
+<h3>Every day (5 minutes)</h3>
+<ol>
+<li><b>Morning:</b> write your Top 3 tasks. Only three.</li>
+<li><b>Evening:</b> fill in each goal: enter the number (minutes, hours, km...) and tick the goal <b>only if you met its rule</b>.</li>
+<li>Tick your routine steps, enter your bedtime, and write 1-2 lines of reflection.</li>
+</ol>
+<h3>The rule for ticking each goal (be honest)</h3>
+<ul>
+<li><b>Spiritual:</b> at least 15 minutes of prayer or reflection.</li>
+<li><b>Education:</b> at least 2 hours of focused study (phone away).</li>
+<li><b>Money:</b> spent no more than your daily budget, and only on planned items.</li>
+<li><b>Discipline:</b> no more than 5 game matches, and in bed by 22:20.</li>
+<li><b>Health:</b> at least 20 minutes of running or exercise.</li>
+</ul>
+<p class="meta">You can change these rules to suit you, but decide them once and do not change them when a day goes badly. A missed day is data, not failure.</p>
+<h3>How to measure where you are</h3>
+<ul>
+<li><b>Consistency</b> = days done ÷ days passed. This is your real score. 80% or more is On Track; 50-79% is Slightly Behind; below 50% is Behind.</li>
+<li><b>Time used</b> shows how far you are in the goal deadline (90 days, 16 days). Compare it with days done.</li>
+<li><b>Weekly averages</b> (study hours, km, matches, spending) show if the numbers are improving. Compare this week with last week.</li>
+<li><b>Daily score</b> = share of goals plus routine steps completed that day.</li>
+</ul>
+<h3>Where you are going</h3>
+<ul>
+<li>Education: aim for GPA 3.5. Track study hours and exam accuracy weekly; more focused hours with rising accuracy leads to the GPA.</li>
+<li>Discipline and health: aim for a streak. A 21-day streak means the habit is forming.</li>
+<li>Money: aim for weeks where actual spending is at or below budget.</li>
+</ul>
+<h3>Tips</h3>
+<ul>
+<li>Never skip twice in a row. If you miss a day, restart with the smallest version (3 minutes).</li>
+<li>Do the weekly review every Sunday. This is where progress is actually decided.</li>
+<li>Your data saves automatically (see the status at the top of Today).</li>
+</ul>
+</section>
+</main>
+
+<script>
+const GOALS=[
+ {id:"spirit",n:"Spiritual: choose God in everything",t:90,m:"Prayer/reflection (min)",rule:"15+ min"},
+ {id:"edu",n:"Education: GPA 3.5",t:16,m:"Study (hours)",m2:"Practice-exam accuracy (%)",rule:"2+ hours"},
+ {id:"money",n:"Money: financial freedom",t:90,m:"Spent today",rule:"within budget"},
+ {id:"disc",n:"Discipline: consistency",t:90,m:"Game matches played",rule:"5 or fewer, bed on time"},
+ {id:"health",n:"Health: run daily",t:90,m:"Exercise (min)",m2:"Distance (km)",rule:"20+ min"}
+];
+const ROUTINE=["Won the morning","Self-reflection","Protected my energy","Physical activity","Finished my top 3 tasks","Night review & plan"];
+const KEY="jovian-tracker-v2",DOC="tracker/v2";
+const $=s=>document.querySelector(s);
+const iso=d=>{const z=new Date(d.getTime()-d.getTimezoneOffset()*6e4);return z.toISOString().slice(0,10)};
+const T=iso(new Date());
+let S={start:T,budget:0,wk:"",days:{}},sel=T,db=null,timer=null;
+const day=d=>S.days[d]||(S.days[d]={g:{},r:[],top:["","",""],bed:"",ref:""});
+const addDays=(d,n)=>{const x=new Date(d+"T12:00:00");x.setDate(x.getDate()+n);return iso(x)};
+const diff=(a,b)=>Math.round((new Date(b+"T12:00:00")-new Date(a+"T12:00:00"))/864e5);
+const num=v=>v===""||v==null||isNaN(+v)?null:+v;
+function score(d){const x=S.days[d];if(!x)return 0;
+ return (GOALS.filter(k=>x.g[k.id]&&x.g[k.id].done).length+x.r.filter(Boolean).length)/(GOALS.length+ROUTINE.length)}
+function status(t){$("#st").textContent=t}
+function saveLocal(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function save(){saveLocal();status("Saving...");clearTimeout(timer);
+ timer=setTimeout(async()=>{
+  if(db){try{await db.doc(DOC).set({json:JSON.stringify(S)});status("Saved ✓");return}catch(e){}}
+  status("Saved on this device")},600)}
+function merge(o){if(o&&o.days){S=Object.assign({start:T,budget:0,wk:""},o)}}
+function avg(a){const v=a.filter(x=>x!=null);return v.length?v.reduce((p,c)=>p+c,0)/v.length:null}
+function wkAvg(g,key,from,to){const a=[];for(let i=from;i<=to;i++){const x=S.days[addDays(T,-i)];if(x&&x.g[g])a.push(num(x.g[g][key]))}return avg(a)}
+const f=v=>v==null?"-":(Math.round(v*10)/10);
+
+function renderToday(){
+ $("#date").value=sel;$("#start").value=S.start;$("#bud").value=S.budget||"";
+ const x=day(sel);$("#goals").innerHTML="";
+ const n=diff(S.start,sel)+1;
+ GOALS.forEach(g=>{
+  const cur=x.g[g.id]||{};
+  const c=document.createElement("div");c.className="card goal";
+  c.innerHTML=`<label class="h"><input type="checkbox" ${cur.done?"checked":""}> ${g.n}</label>
+  <div class="meta">Rule: ${g.rule}${n>=1&&n<=g.t?" · Day "+n+" of "+g.t:""}</div>
+  <div class="row" style="margin-top:8px"><span class="meta">${g.m}</span><input type="number" data-k="v1" min="0" step="any" value="${cur.v1??""}">
+  ${g.m2?`<span class="meta">${g.m2}</span><input type="number" data-k="v2" min="0" step="any" value="${cur.v2??""}">`:""}</div>
+  <textarea placeholder="What did I do on this goal today?">${cur.note||""}</textarea>`;
+  const set=(k,v)=>{const o=day(sel).g[g.id]||(day(sel).g[g.id]={});o[k]=v;save()};
+  c.querySelector("input[type=checkbox]").onchange=e=>{set("done",e.target.checked);renderProg()};
+  c.querySelectorAll("input[type=number]").forEach(i=>i.oninput=e=>set(i.dataset.k,e.target.value));
+  c.querySelector("textarea").oninput=e=>set("note",e.target.value);
+  $("#goals").appendChild(c)});
+ $("#routine").innerHTML="";
+ ROUTINE.forEach((r,i)=>{const l=document.createElement("label");
+  l.innerHTML=`<input type="checkbox" ${x.r[i]?"checked":""}> ${r}`;
+  l.querySelector("input").onchange=e=>{day(sel).r[i]=e.target.checked;save();renderProg()};
+  $("#routine").appendChild(l)});
+ $("#top").innerHTML="";
+ x.top.forEach((t,i)=>{const d=document.createElement("div");d.className="row";d.style.marginBottom="6px";
+  d.innerHTML=`<span>${i+1}.</span><input type="text" placeholder="Task ${i+1}">`;
+  const inp=d.querySelector("input");inp.value=t;inp.oninput=e=>{day(sel).top[i]=e.target.value;save()};
+  $("#top").appendChild(d)});
+ $("#bed").value=x.bed||"";$("#ref").value=x.ref||"";
+}
+
+function renderProg(){
+ let streak=0,d=T;if(score(d)<=0)d=addDays(d,-1);
+ while(score(d)>0.3){streak++;d=addDays(d,-1)}
+ const all=Object.keys(S.days).filter(k=>score(k)>0);
+ const av=all.length?Math.round(all.reduce((a,k)=>a+score(k),0)/all.length*100):0;
+ $("#stats").innerHTML=`<div><div class="big">${streak}</div><div class="meta">Day streak</div></div><div><div class="big">${all.length}</div><div class="meta">Days logged</div></div><div><div class="big">${av}%</div><div class="meta">Avg daily score</div></div>`;
+ $("#hist").innerHTML="";
+ for(let i=13;i>=0;i--){const k=addDays(T,-i),b=document.createElement("div");
+  b.style.height=Math.max(3,Math.round(score(k)*100))+"%";b.title=k+": "+Math.round(score(k)*100)+"%";$("#hist").appendChild(b)}
+ const passed=Math.max(1,diff(S.start,T)+1);
+ $("#pg").innerHTML="";
+ GOALS.forEach(g=>{
+  const done=Object.keys(S.days).filter(k=>S.days[k].g[g.id]&&S.days[k].g[g.id].done).length;
+  const elapsed=Math.min(passed,g.t),cons=Math.round(Math.min(done,elapsed)/elapsed*100);
+  const used=Math.round(elapsed/g.t*100),left=Math.max(0,g.t-passed);
+  const st=cons>=80?["On track","g"]:cons>=50?["Slightly behind","y"]:["Behind","r"];
+  const a=wkAvg(g.id,"v1",0,6),b=wkAvg(g.id,"v1",7,13);
+  const a2=g.m2?wkAvg(g.id,"v2",0,6):null,b2=g.m2?wkAvg(g.id,"v2",7,13):null;
+  const c=document.createElement("div");c.className="card";
+  c.innerHTML=`<div class="row sp"><h2 style="margin:0">${g.n}</h2><span class="tag ${st[1]}">${st[0]}</span></div>
+  <div class="meta">Consistency: ${cons}% (${done} done / ${elapsed} days passed)</div><div class="bar"><i style="width:${cons}%"></i></div>
+  <div class="meta">Time used: ${used}% of ${g.t} days · ${left} days left</div><div class="bar"><i style="width:${used}%;background:var(--mut)"></i></div>
+  <div class="meta">${g.m}, weekly average: <b>${f(a)}</b> this week vs <b>${f(b)}</b> last week</div>
+  ${g.m2?`<div class="meta">${g.m2}, weekly average: <b>${f(a2)}</b> this week vs <b>${f(b2)}</b> last week</div>`:""}
+  ${g.id==="money"&&S.budget?`<div class="meta">Daily budget: ${S.budget}. This week's average spending is ${a==null?"not logged":(a<=S.budget?"within":"above")+" budget"}.</div>`:""}`;
+  $("#pg").appendChild(c)});
+ $("#wk").value=S.wk||"";
+}
+
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
+ document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x===b));
+ ["today","prog","guide"].forEach(id=>$("#"+id).classList.toggle("hide",id!==b.dataset.t));
+ if(b.dataset.t==="prog")renderProg()});
+$("#date").onchange=e=>{if(e.target.value){sel=e.target.value;renderToday()}};
+$("#prev").onclick=()=>{sel=addDays(sel,-1);renderToday()};
+$("#next").onclick=()=>{sel=addDays(sel,1);renderToday()};
+$("#tod").onclick=()=>{sel=T;renderToday()};
+$("#start").onchange=e=>{if(e.target.value){S.start=e.target.value;save();renderToday()}};
+$("#bud").oninput=e=>{S.budget=num(e.target.value)||0;save()};
+$("#bed").onchange=e=>{day(sel).bed=e.target.value;save()};
+$("#ref").oninput=e=>{day(sel).ref=e.target.value;save()};
+$("#wk").oninput=e=>{S.wk=e.target.value;save()};
+
+try{const l=localStorage.getItem(KEY);if(l)merge(JSON.parse(l))}catch(e){}
+renderToday();renderProg();
+(async()=>{try{
+ db=window.claude&&await claude.use("db");
+ if(db){const s=await db.doc(DOC).get();
+  if(s.exists&&s.data().json){merge(JSON.parse(s.data().json));saveLocal();renderToday();renderProg()}
+  else if(Object.keys(S.days).length)await db.doc(DOC).set({json:JSON.stringify(S)});
+  status("Connected ✓")}else status("Saved on this device")
+}catch(e){db=null;status("Saved on this device")}})();
+</script>
+</body>
+</html>
